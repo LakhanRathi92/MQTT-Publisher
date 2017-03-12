@@ -38,15 +38,17 @@ public class mqtt3jar {
 				/*Actual reading*/
 				byte[] reading = content.getBytes();	            
 				
-				/*determining the size to be encoded in first byte/(s)*/
-				int size = reading.length+serializedTable.length;
+				/*determining the size (of translation table) to be encoded in first byte/(s)*/
+				int size = serializedTable.length;
 				
 				/* Encode size information using variable length encoding scheme of MQTT */
 	            byte[] encodedByte = VariableLengthEnc_Dec.Encode(size);
 	            
 	            ByteArrayOutputStream out = new ByteArrayOutputStream();
 	        
+	            /*byte[] {lengthOfTable, Table, SensoryReading}*/
 	            out.write(encodedByte);
+	            out.write(serializedTable);
 	            out.write(reading);
 	          
 	            
