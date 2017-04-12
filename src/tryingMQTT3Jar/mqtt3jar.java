@@ -11,8 +11,9 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class mqtt3jar {
 		public static void main(String args[]) throws IOException{
-			String topic        = "MQTT Examples";
-	        String content      = "2.0";
+			String topic        = "http://localhost:8000/publishersURL.html";
+	        String content1      = "2.0";
+	        String content2     = "300";
 	        int qos             = 2;
 	        String broker       = "ws://localhost:8080";
 	        String clientId     = "JavaSample";
@@ -25,32 +26,52 @@ public class mqtt3jar {
 	            System.out.println("Connecting to broker: "+broker);
 	            sampleClient.connect(connOpts);
 	            System.out.println("Connected");
-	            System.out.println("Publishing message: "+ content);
+	            System.out.println("Publishing message: "+ content1 + " and " + content2);
 	            
 	            /* creating an entry in Binary Translation Table */
 	            BinaryTranslationTable table = new BinaryTranslationTable();
 	    		TableRow row1 = new TableRow();	    		
-	    		row1.createRow(123, (short)0, (short)3);
+	    		/*size of payoad*/
+	    		final byte[] utf8Bytes = content1.getBytes("UTF-8");
+	    		short len = (short) utf8Bytes.length; // prints "11"
+	    		
+	    		row1.createRow(123, (short)0, (short) (len-1));
 	            table.addElement(row1);
+	            
+	            TableRow row2 = new TableRow();
+	            final byte[] utf8Bytes2 = content2.getBytes("UTF-8");
+	    		short len2 = (short) utf8Bytes2.length; // prints "11"
+	    		
+	    		row2.createRow(456, (short) len, (short) (len2-1));
+	            table.addElement(row2);
+	            
 	            byte[] serializedTable = null;
 				serializedTable = SerDes.serialize(table);
 				
 				/*Actual reading*/
-				byte[] reading = content.getBytes();	            
+				byte[] reading1 = content1.getBytes("UTF-8");	            
+				byte[] reading2 = content2.getBytes("UTF-8");
 				
 				/*determining the size (of translation table) to be encoded in first byte/(s)*/
-				int size = serializedTable.length;
+				int sizeTable = serializedTable.length;
 				
 				/* Encode size information using variable length encoding scheme of MQTT */
-	            byte[] encodedByte = VariableLengthEnc_Dec.Encode(size);
+	            byte[] encodedByte = VariableLengthEnc_Dec.Encode(sizeTable);
 	            
 	            ByteArrayOutputStream out = new ByteArrayOutputStream();
 	        
 	            /*byte[] {lengthOfTable, Table, SensoryReading}*/
+	            
+	            System.out.println("size of encoded byte " + encodedByte.length + " size of  "
+	            		+ "table " + sizeTable + " size of paylaod " + reading1.length+reading2.length);
+	            
+	            
+	            
+	            
 	            out.write(encodedByte);
 	            out.write(serializedTable);
-	            out.write(reading);
-	          
+	            out.write(reading1);
+	            out.write(reading2);
 	            
 	            /*Regular MQTT Publish*/	            
 	            MqttMessage message = new MqttMessage(out.toByteArray());
