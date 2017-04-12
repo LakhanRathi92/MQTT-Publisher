@@ -2,7 +2,6 @@ package tryingMQTT3Jar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -12,6 +11,21 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class PublisherTech2 {
 	public static void main(String[] args) throws IOException{
+		
+		
+		
+	}
+	
+	public static int numBytesToEncode(int len) {
+        if (0 <= len && len <= 127) return 1;
+        if (128 <= len && len <= 16383) return 2;
+        if (16384 <= len && len <= 2097151) return 3;
+        if (2097152 <= len && len <= 268435455) return 4;
+        throw new IllegalArgumentException("value shoul be in the range [0..268435455]");
+    }
+	
+	
+	public void sendData() throws IOException{
 		String topic        = "http://localhost:8000/observations.ttl";
         String content1      = "7777"; //Hard coded 0 for proximity sensor (typically between 0-5 volts)
         String content2     = "99999999"; // For temperature
@@ -60,11 +74,11 @@ public class PublisherTech2 {
 			/* Combine them up */
             ByteArrayOutputStream out = new ByteArrayOutputStream();
                    
-           out.write(inByteArray);
-           out.write(entry1);
-           out.write(entry2);
-           out.write(read1);
-           out.write(read2);
+            out.write(inByteArray);
+            out.write(entry1);
+            out.write(entry2);
+            out.write(read1);
+            out.write(read2);
             
             System.out.println("Econded content size " + out.size() + " Bytes" );
             
@@ -84,14 +98,7 @@ public class PublisherTech2 {
             System.out.println("cause "+me.getCause());
             System.out.println("excep "+me);
             me.printStackTrace();
-        }	
+        }
 	}
 	
-	public static int numBytesToEncode(int len) {
-        if (0 <= len && len <= 127) return 1;
-        if (128 <= len && len <= 16383) return 2;
-        if (16384 <= len && len <= 2097151) return 3;
-        if (2097152 <= len && len <= 268435455) return 4;
-        throw new IllegalArgumentException("value shoul be in the range [0..268435455]");
-    }
 }
