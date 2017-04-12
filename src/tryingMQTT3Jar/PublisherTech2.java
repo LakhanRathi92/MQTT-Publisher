@@ -12,7 +12,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 public class PublisherTech2 {
 	public static void main(String[] args) throws IOException{
 		
-		
+		sendData();
 		
 	}
 	
@@ -25,7 +25,7 @@ public class PublisherTech2 {
     }
 	
 	
-	public void sendData() throws IOException{
+	public static void sendData() throws IOException{
 		String topic        = "http://localhost:8000/observations.ttl";
         String content1      = "7777"; //Hard coded 0 for proximity sensor (typically between 0-5 volts)
         String content2     = "99999999"; // For temperature
