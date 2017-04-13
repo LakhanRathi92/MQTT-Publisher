@@ -2,18 +2,45 @@ package tryingMQTT3Jar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import com.pi4j.io.gpio.*;
+import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
+import com.pi4j.io.gpio.event.GpioPinListenerDigital;
+import java.lang.InterruptedException;
+
+
 public class PublisherTech2 {
 	public static void main(String[] args) throws IOException{
-		
-		sendData();
-		
+		System.out.println("Starting Proximity Sensor measurement !");        
+        final GpioController gpio = GpioFactory.getInstance();
+        GpioPinListenerDigital listener  = new GpioPinListenerDigital() {
+        @Override
+        public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+            // display pin state on console
+            System.out.println(" --> GPIO PIN STATE CHANGE: " + event.getPin() + " = " + event.getState());
+    		sendData(event.getState());
+            }
+        };        
+        GpioPinDigitalInput pin = gpio.provisionDigitalInputPin(RCMPin.GPIO_25, "");
+        System.out.println(" --> pin number " + pin);
+        System.out.println(" --> GPIO PIN STATE CHANGE: " + pin.getState());
+        
+         // create and register gpio pin listener
+        gpio.addListener(listener, pin);
+        
+        try{
+            while(true) {
+                Thread.sleep(500);
+            }
+        }
+        catch (InterruptedException e){
+            Thread.currentThread().interrupt();
+        }		
 	}
 	
 	public static int numBytesToEncode(int len) {
@@ -25,9 +52,17 @@ public class PublisherTech2 {
     }
 	
 	
-	public static void sendData() throws IOException{
+	public static void sendData(PinState proximity) throws IOException{
 		String topic        = "http://localhost:8000/observations.ttl";
-        String content1      = "7777"; //Hard coded 0 for proximity sensor (typically between 0-5 volts)
+        
+		if(proximity.isHigh()){
+			String content1      = "1"; 
+		}
+		else
+		{
+			String content1      = "0"; 
+		}
+        
         String content2     = "99999999"; // For temperature
         int qos             = 0;
         String broker       = "ws://localhost:8080";
